@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <title>Bingo Game</title>
+    <style type="text/css">
+        table, th, td {
+  border: 1px solid black;
+  padding: 5px;
+}
+        .container {
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .highlite {
+            font-weight: bold;
+            color: #0a9600 !important;
+        }
+
+        .col-lg-3 col-md-3 col-3, .col-lg-3, .col-md-3, .col-3 {
+            padding: 20px;
+            background-color: #99CCFF;
+            border: thick solid #808080;
+        }
+    </style>
+</head>
+<body>
+    <div id="tableBingo"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-9 col-md-9 col-9">
+                <div id="BingoList">
+
+                </div>
+
+
+            </div>
+            <div class="col-lg-3 col-md-3 col-3">
+                <ul id="discussion">
+                </ul>
+                <input type="text" id="message" />
+                <input type="button" id="sendmessage" value="Send" />
+                <input type="button" id="callBingo" value="Call Bingo" />
+                <input type="button" id="startgame" value="StartGame" />
+                <input type="hidden" id="displayname" />
+            </div>
+
+        </div>
+    </div>
+
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="signalr/hubs"></script>
+    <script type="text/javascript">
+
+        $(function () {
+            var stop = false;
+            var chat = $.connection.chatHub;
+
+            chat.client.broadcastMessage = function (name, message) {
+                // Html encode display name and message.
+                var encodedName = $('<div />').text(name).html();
+                var encodedMsg = $('<div />').text(message).html();
+                // Add the message to the page.
+                $('#discussion').append('<li><strong>' + encodedName
+                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
+            };
+
+            chat.client.receiveBingoNumber = function (num) {
+                //$('#BingoList').append('<li><strong>' + num + '</li>');
+                markBingoNumber2(num);
+            };
+
+            chat.client.StartNewGame = function (msg) {
+                // Update table of Bingo numbers. Change background colors
+                stop = true;
+                //StopMakeBingoBoard();
+                alert(msg);
+                makeBingoBoard();
+                stop = false;
+                callMakeBingoBoard();
+                //makeBingoBoard();
+            }
+
+            // Get the user name and store it to prepend to messages.
+            $('#displayname').val(prompt('Enter your name:', ''));
+            // Set initial focus to message input box.
+            $('#message').focus();
+
+            // Start the connection.
+            $.connection.hub.start().done(function () {
+                var callMakeBingoBoard = function () {
+                    if (!stop) {
+                        chat.server.getBingoNumber();
+                    }
+                    setTimeout(callMakeBingoBoard, 3000);
+                }
+
+                callMakeBingoBoard();
+
+                $('#sendmessage').click(function () {
+                    // Call the Send method on the hub.
+                    chat.server.send($('#displayname').val(), $('#message').val());
+                    // Clear text box and reset focus for next comment.
+                    $('#message').val('').focus();
+                });
+                //$("#message").on("keydown", function (event) {
+                //    if (event.which == 13)
+                //        chat.server.send($('#displayname').val(), $('#message').val());
+                //    $('#message').val('').focus();
+                //});
+
+
+
+                $('#callBingo').click(function () {
+                    // Call the Send method on the hub.
+                    chat.server.callBingo($('#displayname').val());
+
+                });
+
+                $('#startgame').click(function () {
+                    // Call the Send method on the hub.
+                    chat.server.send();
+                    // Clear text box and reset focus for next comment.
+                    $('#message').val('').focus();
+                });
+            });
+        });
+        makeBingoBoard = function () {
+            // LET'S SAY THAT WE HAVE A SIMPLE FLAT ARRAY
+            var data = [];
+            for (var i = 1; i < 91; i++) {
+
+                data.push(i);
+            }
+
+
+            // DRAW THE HTML TABLE
+            var perrow = 10, // 3 items per row
+                html = "<table><tr>";
+
+            // Loop through array and add table cells
+            for (var i = 0; i < data.length; i++) {
+                html += "<td class= 'bingo'>" + data[i] + "</td>";
+                // Break into next row
+                var next = i + 1;
+                if (next % perrow == 0 && next != data.length) {
+                    html += "</tr><tr>";
+                }
+            }
+            html += "</tr></table>";
+            // ATTACH HTML TO CONTAINER
+            document.getElementById("tableBingo").innerHTML = html;
+
+        }
+        window.addEventListener("load", makeBingoBoard);
+
+
+        function markBingoNumber2(msg) {
+            $("#tableBingo td.bingo").filter(function () {
+                return $(this).text() == msg;
+            }).addClass('highlite');
+        };
+        var updateNum;
+        function markBingoNumber() {
+            $("#tableBingo td:nth-child(3)").each(function () {
+                if ($(this).text() == "10") {
+                    $(this).parent("tr").css("background-color", "red");
+                }
+            });
+        }
+            //$(document).ready(function () {
+            //    updateBingoNumbers();
+            //});
+            //function updateBingoNumbers() {
+            //    chat.server.getBingoNumber();
+            //    updateNum = setTimeout(updateBingoNumbers, 2000);
+            //}
+
+
+
+
+    </script>
+
+</body>
+
+</html>
