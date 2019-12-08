@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Microsoft.AspNet.SignalR;
-
+ 
 namespace SignalRChat
 {
     public class ChatHub : Hub
     {
+         Bingo  b = new Bingo();
+        
         //skal sende list med ud til getbingonumbers
         public  List<int> bingoBoardNumbers = new List<int>();
         public void Send(string name, string message)
@@ -18,13 +20,19 @@ namespace SignalRChat
 
         public void getBingoNumber()
         {
-             Random rnd = new Random();
-            int num = rnd.Next(1, 100);
+            // Random rnd = new Random();
+            int num = b.SelectRandomNumber();
+            //int num = rnd.Next(1, 100);
+            if (bingoBoardNumbers.Contains(num))
+            {
+                num = b.SelectRandomNumber(); 
+            }
             bingoBoardNumbers.Add(num);
             Clients.All.receiveBingoNumber(num);
         }
         public void CallBingo(string user)
         {
+            
             string message = user + " has called Bingo. New game will start in 5 seconds";
             Clients.All.StartNewGame(message);
         }
@@ -55,7 +63,13 @@ namespace SignalRChat
             NumberGenerater.StartGame();
             Clients.All.broadcastMessage(name, message);
         }
-       
+        public void GetBingoCard()
+        {
+            var Bingo2 = new Bingo();
+            //var arr = Bingo2.GenerateUserBingoCard();
+            var arr = Bingo2.generateBingoCard();
+            Clients.Caller.ReceiveBingoCard(arr);
+        }
 
 
         //public void GetBingoNumbers(string name, string message)
