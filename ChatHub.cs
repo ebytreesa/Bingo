@@ -65,9 +65,7 @@ namespace SignalRChat
         }
         public void GetBingoCard()
         {
-            var Bingo2 = new Bingo();
-            //var arr = Bingo2.GenerateUserBingoCard();
-            var arr = Bingo2.generateBingoCard();
+            var arr = b.generateBingoCard();
             Clients.Caller.ReceiveBingoCard(arr);
         }
 

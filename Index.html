@@ -31,6 +31,10 @@
             background-color: #99CCFF;
             border: thick solid #808080;
         }
+         #callBingo{
+             height:70px;
+             width:100px;
+         }
         #callBingo, #tableBingo{
             margin: 50px;
         }
@@ -53,7 +57,7 @@
                 </ul>
                 <input type="text" id="message" />
                 <input type="button" id="sendmessage" value="Send" />
-                <input type="button" id="startgame" value="StartGame" />
+                <!--<input type="button" id="startgame" value="StartGame" />-->
                 <input type="hidden" id="displayname" />
             </div>
 
@@ -94,7 +98,7 @@
                 //$('#BingoList').append('<li><strong>' + num + '</li>');
                 $('#bingoNumber').text(num);
                  $('#bingoNumber').attr({
-                        style: 'height:50px; width:50px; border: 1px solid black; text-align:center;',
+                        style: 'height:50px; width:50px; background-color:yellow; padding:10px;',
                     });  
                 markBingoNumber(num);
                 listOfBingoNumbers.push(num);
@@ -126,6 +130,7 @@
             $.connection.hub.start().done(function () {
                 // get a bingo card for user
                 chat.server.getBingoCard();
+
                 callMakeBingoNumber = function () {
                     if (!stop) {
                         chat.server.getBingoNumber();
@@ -140,6 +145,7 @@
                     // Clear text box and reset focus for next comment.
                     $('#message').val('').focus();
                 });
+
                 //$("#message").on("keydown", function (event) {
                 //    if (event.which == 13)
                 //        chat.server.send($('#displayname').val(), $('#message').val());
